@@ -4,8 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // Scene
 const scene = new THREE.Scene();
-
-scene.background = new THREE.Color(0x111111);
+scene.background = new THREE.Color(0xFFF9C4);
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
@@ -28,7 +27,7 @@ renderer.setSize(
 );
 
 renderer.setPixelRatio(
-  window.devicePixelRatio
+  Math.min(window.devicePixelRatio, 2)
 );
 
 document.body.appendChild(
@@ -45,19 +44,17 @@ controls.enableDamping = true;
 
 // Lights
 
-const ambientLight =
-  new THREE.AmbientLight(
-    0xffffff,
-    2
-  );
+const ambientLight = new THREE.AmbientLight(
+  0xffffff,
+  2
+);
 
 scene.add(ambientLight);
 
-const directionalLight =
-  new THREE.DirectionalLight(
-    0xffffff,
-    4
-  );
+const directionalLight = new THREE.DirectionalLight(
+  0xffffff,
+  4
+);
 
 directionalLight.position.set(
   5,
@@ -67,18 +64,38 @@ directionalLight.position.set(
 
 scene.add(directionalLight);
 
-// Load Model
+const directionalLight2 = new THREE.DirectionalLight(
+  0xffffff,
+  2
+);
 
-const loader =
-  new GLTFLoader();
+directionalLight2.position.set(
+  -5,
+  3,
+  -5
+);
+
+scene.add(directionalLight2);
+
+// Grid (opcional para referencia)
+
+const gridHelper = new THREE.GridHelper(
+  20,
+  20
+);
+
+scene.add(gridHelper);
+
+// Model
+
+const loader = new GLTFLoader();
 
 loader.load(
   './model.glb',
 
   (gltf) => {
 
-    const model =
-      gltf.scene;
+    const model = gltf.scene;
 
     scene.add(model);
 
@@ -93,12 +110,60 @@ loader.load(
       1,
       1
     );
+
+    // Centrar modelo automáticamente
+
+    const box = new THREE.Box3().setFromObject(model);
+
+    const center = box.getCenter(
+      new THREE.Vector3()
+    );
+
+    model.position.sub(center);
+
+    // Ajustar cámara automáticamente
+
+    const size = box.getSize(
+      new THREE.Vector3()
+    );
+
+    const maxDimension = Math.max(
+      size.x,
+      size.y,
+      size.z
+    );
+
+    camera.position.set(
+      maxDimension,
+      maxDimension * 0.7,
+      maxDimension * 1.8
+    );
+
+    controls.target.set(
+      0,
+      0,
+      0
+    );
+
+    controls.update();
   },
 
-  undefined,
+  (progress) => {
+
+    console.log(
+      `${(
+        progress.loaded /
+        progress.total
+      ) * 100}% loaded`
+    );
+  },
 
   (error) => {
-    console.error(error);
+
+    console.error(
+      'Error loading model:',
+      error
+    );
   }
 );
 
