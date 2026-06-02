@@ -77,15 +77,6 @@ directionalLight2.position.set(
 
 scene.add(directionalLight2);
 
-// Grid (opcional para referencia)
-
-const gridHelper = new THREE.GridHelper(
-  20,
-  20
-);
-
-scene.add(gridHelper);
-
 // Model
 
 const loader = new GLTFLoader();
